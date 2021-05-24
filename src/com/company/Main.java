@@ -12,6 +12,7 @@ public class Main {
     private static HashMap < Character, String > encodedValues = new HashMap < Character, String > ();
     private static float entropy = 0;
     private static float avgWordLength = 0;
+    private static String output = "";
 
     private static void frequency(String text) {
         for (char c : text.toCharArray()) {
@@ -37,45 +38,43 @@ public class Main {
     }
 
     private static Node createHuffmanTree() {
-         //tworzymy mapę, która przechowa ilość wystąpień dla każdego znaku
 
-        NodeComparator nc = new NodeComparator(); //tworzymy instancję pomocniczej klasy
-        PriorityQueue<Node> nodes = new PriorityQueue<Node>(occurences.size(), nc); //korzystamy z PriorityQueue - w uproszczeniu jest to lista, która zadba, aby nasze elementy były zawsze posortowane; korzysta ona z naszego Comparatora
-        for (Map.Entry<Character, Integer> entry : occurences.entrySet()) { //zamieniamy znaki i ich ilość wystąpień na liście, a następnie dodajemy je do utworzonej listy
+        NodeComparator nc = new NodeComparator();
+        PriorityQueue<Node> nodes = new PriorityQueue<Node>(occurences.size(), nc);
+        for (Map.Entry<Character, Integer> entry : occurences.entrySet()) {
             Node n = new Node(entry.getKey(), entry.getValue());
             nodes.add(n);
         }
-        Node rootNode = null; //zmienna pomocnicza przechowująca korzeń drzewa - finalnie ma być on liściem przechowującym wartość równą długości wpisanego wyrazu
-        while (nodes.size() > 1) { //dopóki na liście nie pozostał jeden element(korzeń)
+        Node rootNode = null;
+        while (nodes.size() > 1) {
 
-            Node n1 = nodes.peek(); //pobieramy najmniejszy element z listy
-            nodes.poll(); //a następnie go usuwamy
-            Node n2 = nodes.peek(); //ponownie pobieramy najmniejszy element z listy
-            nodes.poll(); //i ponownie go usuwamy; w ten sposób pobraliśmy dwa najmniejsze elementy z listy
-            Node parent = new Node(n1.getValue() + n2.getValue()); //tworzymy liść, który będzie przechowywał powyższe elementy
+            Node n1 = nodes.peek();
+            nodes.poll();
+            Node n2 = nodes.peek();
+            nodes.poll();
+            Node parent = new Node(n1.getValue() + n2.getValue());
             if (n1.getValue() == n2.getValue() && !n1.isLeaf()) {
                 Node pom = n1;
                 n1 = n2;
                 n2 = pom;
             }
-            rootNode = parent; // ustawiamy go tymczasowo jako korzeń
-            parent.left = n1; // mniejszy element ustawamy jako jego lewe dziecko
-            parent.right = n2;// większy jako jego prawe dziecko
-            nodes.add(parent); //następnie dodajemy rodzica jako samodzielny element do listy
+            rootNode = parent;
+            parent.left = n1;
+            parent.right = n2;
+            nodes.add(parent);
         }
         return rootNode;
     }
 
-    private static void encodeValues(Node node, String txt, HashMap < Character, String > encodedValues) { //tworzymy rekurencyjną funkcję, która nada liścią odpowiednie wartości
+    private static void encodeValues(Node node, String txt, HashMap < Character, String > encodedValues) {
         if (node == null) {
             return;
         }
-        if (node.getCharacter() != null) { //jeżeli liść posiada swój znak
-            //System.out.println(node.getCharacter() + ":" + txt);
-            encodedValues.put(node.getCharacter(), txt); //dodajemy jego zakodowaną wartość do tablicy
+        if (node.getCharacter() != null) {
+            encodedValues.put(node.getCharacter(), txt);
         }
-        encodeValues(node.left, txt + "0", encodedValues); //wywołujemy funkcję rekurencyjnie
-        encodeValues(node.right,txt + "1", encodedValues); //dla obu dzieci; w ten sposób całemu drzewu zostanie przypisana wartość
+        encodeValues(node.left, txt + "0", encodedValues);
+        encodeValues(node.right,txt + "1", encodedValues);
     }
 
     public static float log2(float n) {
@@ -91,32 +90,32 @@ public class Main {
     }
 
     private static String decode(Node root, String encoded){
-        String decoded = ""; //zmienna pomocnicza
-        Node currentNode = root; //aktualnie sprawdzany liść
-        for(char c : encoded.toCharArray()){ //iterujemy poprzez zakodowany tekst
-            if(c == '0'){ //jeżeli iterowany znak jest zerem, to oznacza, że musimy iść w lewo
-                if(currentNode.left.isLeaf()){ //jeżeli dziecko po lewo jest liściem przechowującym znak
-                    decoded += currentNode.left.getCharacter(); //dodajemy ten znak do zmiennej pomocniczej
-                    currentNode = root; //a następnie wracamy na początek drzewa
+        String decoded = "";
+        Node currentNode = root;
+        for(char c : encoded.toCharArray()){
+            if(c == '0'){
+                if(currentNode.left.isLeaf()){
+                    decoded += currentNode.left.getCharacter();
+                    currentNode = root;
                 }
                 else{
-                    currentNode = currentNode.left; //jeżeli trafiliśmy na kontener, ustawiamy go jako aktualny
+                    currentNode = currentNode.left;
                 }
 
             }
-            else{ //jeżeli jest to inny znak (1), to przechodzimy na prawą stronę
-                if(currentNode.right.isLeaf()){ //jeżeli dziecko po prawo jest liściem przechowującym znak
-                    decoded += currentNode.right.getCharacter();//dodajemy ten znak do zmiennej pomocniczej
-                    currentNode = root;//a następnie wracamy na początek drzewa
+            else{
+                if(currentNode.right.isLeaf()){
+                    decoded += currentNode.right.getCharacter();
+                    currentNode = root;
                 }
                 else{
-                    currentNode = currentNode.right;//jeżeli trafiliśmy na kontener, ustawiamy go jako aktualny
+                    currentNode = currentNode.right;
                 }
 
             }
 
         }
-        return decoded; //na koniec zwracamy odkodowany tekst
+        return decoded;
     }
 
     private static void getAvgWordLength() {
@@ -127,33 +126,34 @@ public class Main {
 
     private static void createTable() {
         for(Map.Entry<Character, Float> entry : prob.entrySet()) {
-            System.out.println(entry.getKey() + "\t\t" + entry.getValue() + "\t\t\t" + encodedValues.get(entry.getKey()));
+            System.out.println(entry.getKey() + "\t\t" + entry.getValue() + "\t\t\t" + occurences.get(entry.getKey()) + "\t\t\t\t" +encodedValues.get(entry.getKey()));
+        }
+    }
+
+    private static void coding(String text) {
+        for (char c: text.toCharArray()) {
+            output += encodedValues.get(c);
         }
     }
 
     public static void main(String[] args) {
         System.out.println("Kodowanie Huffmana\nPodaj tekst do zakodowania: ");
         Scanner sc = new Scanner(System.in);
-        String text = sc.nextLine(); //pobieramy wiersz od użytkownika
-        sc.close(); //zwalnianie zasobów
+        String text = sc.nextLine();
+        sc.close();
         frequency(text);
         probabilities();
         Node rootNode = createHuffmanTree();
         encodeValues(rootNode, "", encodedValues);
-        System.out.println("Statystki:");
+        System.out.println("\nStatystki:\n");
         getEntropy();
-        System.out.println("Wartość entropii: " + entropy);
+        System.out.println("Wartość entropii: " + entropy + "\n");
         getAvgWordLength();
-        System.out.println("Srednia dlugość słowa kodowego " + avgWordLength);
-        System.out.println("Znak\tPrawdopodobieństwo\tKod");
+        System.out.println("Srednia dlugość słowa kodowego " + avgWordLength + "\n");
+        System.out.println("Znak\tPrawdopodobieństwo\tIlość wystąpień\tKod");
         createTable();
-        String output = "";
-        for (char c: text.toCharArray()) {
-            output += encodedValues.get(c); //następnie kodujemy wyraz, korzystając z utworzonej tablicy kodowania
-        }
-        System.out.println();
-        System.out.println("Oto twój tekst zakodowany metodą Huffmana: " + output);
-        System.out.println();
+        coding(text);
+        System.out.println("\nOto twój tekst zakodowany metodą Huffmana: " + output + "\n");
         System.out.println("Oto odkodowany tekst: " + decode(rootNode, output));
     }
 }

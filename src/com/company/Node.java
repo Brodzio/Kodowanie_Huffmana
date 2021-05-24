@@ -1,11 +1,11 @@
 package com.company;
 
 public class Node {
-    private int value; //przechowywana wartość
-    private Character character = null; //przechowywany znak
-    public Node left = null; //lewe dziecko danego liścia
-    public Node right = null; //prawe dziecko danego liścia
-    public Node(char letter, int val) { //tworzymy konstruktor liścia dla znaków
+    private int value;
+    private Character character = null;
+    public Node left = null;
+    public Node right = null;
+    public Node(char letter, int val) {
         value = val;
         character = letter;
     }
